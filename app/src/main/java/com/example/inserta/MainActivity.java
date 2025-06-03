@@ -23,9 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-    EditText etNombre;
-    Button btnInsertar;
-    TextView tvRespuesta;
+    EditText etNombre, etCorreo;
+    Button btnEnviar;
+    TextView tvResultado;
 
     String URL = "http://192.168.12.67/insertar.php"; // cambia si a tu api
     // ejecuta cmd y escribe ipconfig y anota tu ip
@@ -35,41 +35,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         etNombre = findViewById(R.id.etNombre);
-        btnInsertar = findViewById(R.id.btnInsertar);
-        tvRespuesta = findViewById(R.id.tvRespuesta);
+        etCorreo = findViewById(R.id.etCorreo);
+        btnEnviar = findViewById(R.id.btnEnviar);
+        tvResultado = findViewById(R.id.tvResultado);
 
-        btnInsertar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                insertarNombre();
-            }
-        });
+        btnEnviar.setOnClickListener(v -> enviarDatos());
     }
 
-    private void insertarNombre() {
+    private void enviarDatos() {
         String nombre = etNombre.getText().toString().trim();
+        String correo = etCorreo.getText().toString().trim();
 
         StringRequest request = new StringRequest(Request.Method.POST, URL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        tvRespuesta.setText(response);
-                        etNombre.setText("");
-                    }
+                response -> {
+                    tvResultado.setText("Respuesta: " + response);
+                    etNombre.setText("");
+                    etCorreo.setText("");
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        tvRespuesta.setText("Error: " + error.toString());
-                    }
-                }) {
+                error -> tvResultado.setText("Error: " + error.toString())) {
+
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> datos = new HashMap<>();
-                datos.put("nombre", nombre);
-                datos.put("correo", "ejemplo@correo.com"); // aqui se escribe lo que quiereas mandar al php
+                datos.put("name", nombre);     // Deben coincidir con $_POST['name']
+                datos.put("email", correo);    // y $_POST['email'] en el PHP
                 return datos;
             }
         };
